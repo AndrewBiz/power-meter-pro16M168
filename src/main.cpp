@@ -59,12 +59,12 @@ void displaydata() {
   // u8x8.print(F(" ms"));
 
   // // line 5 bits
-  u8x8.setCursor(0, 5);
-  u8x8.clearLine(5);
-  u8x8.print(F("OVF: "));
-  u8x8.print(ovf);
-  u8x8.print(F("  CNVR: "));
-  u8x8.print(cnvr);
+  // u8x8.setCursor(0, 5);
+  // u8x8.clearLine(5);
+  // u8x8.print(F("OVF: "));
+  // u8x8.print(ovf);
+  // u8x8.print(F("  CNVR: "));
+  // u8x8.print(cnvr);
 
   // line 6, power
   u8x8.setCursor(0, 6);
