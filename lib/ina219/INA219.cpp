@@ -83,7 +83,7 @@ void Adafruit_INA219::setCalibration(uint8_t preset) {
   // 50  8192   1,63835
   // 100 4096   3,2
 
-  // test overflow - set minival possible currentLSB, max_current = 230mA
+  // test overflow - set minival possible currentLSB, max_current = 229mA
   ina219_calValue = 58514;
   ina219_currentLSB = 7; //micro-amps
   ina219_currentDivider = 1000;  //to mA

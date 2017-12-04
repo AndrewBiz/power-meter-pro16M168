@@ -123,9 +123,6 @@ class Adafruit_INA219{
     void begin(uint8_t addr);
     void setConfig(void);
     void setCalibration(uint8_t preset = CALIBRATION_DEFAULT_PRESET);
-    // void setCalibration_32V_2A(void);
-    // void setCalibration_32V_1A(void);
-    // void setCalibration_16V_400mA(void);
     float getBusVoltage_V(void);
     float getShuntVoltage_mV(void);
     float getCurrent_mA(void);
