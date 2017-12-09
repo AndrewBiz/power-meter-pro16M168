@@ -1,2 +1,2 @@
 - [x] OVF bit (0) of Bus Voltage Register to indicste if overflow occurs
-- [ ] скорректировать калибровку, замерив реальный ток внешним амперметром: corrected_full_scale_cal = trunc(cal*real_current/ina219_current)  
+- [ ] скорректировать калибровку, замерив реальный ток внешним амперметром: corrected_full_scale_cal = trunc(cal*real_current/INA219_current)  

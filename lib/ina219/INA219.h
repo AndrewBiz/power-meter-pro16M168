@@ -113,7 +113,7 @@
 /*=========================================================================
     Calibration default preset
     -----------------------------------------------------------------------*/
-    #define CALIBRATION_DEFAULT_PRESET 3
+    #define CALIBRATION_DEFAULT_PRESET 0
 /*=========================================================================*/
 
 class Adafruit_INA219{
@@ -123,35 +123,35 @@ class Adafruit_INA219{
     void begin(uint8_t addr);
     void setConfig(void);
     void setCalibration(uint8_t preset = CALIBRATION_DEFAULT_PRESET);
+    int16_t getBusVoltage_raw(void);
+    int16_t getShuntVoltage_raw(void);
+    int16_t getCurrent_raw(void);
+    int16_t getPower_raw(void);
     float getBusVoltage_V(void);
     float getShuntVoltage_mV(void);
     float getCurrent_mA(void);
     float getPower_mW(void);
     int8_t getOVF(void);
     int8_t getCNVR(void);
-
-    uint8_t currentDigitsAfterPoint = 2;
-
+    uint16_t getCurrentDigitsAfterPoint(void);
+    uint16_t getVbusDigitsAfterPoint(void);
 
   private:
-    uint8_t ina219_i2caddr;
-    uint16_t ina219_configValue;
-    uint16_t ina219_calValue;
-    const uint16_t ina219_vshuntLSB = 10; // micro Volts
-    const uint16_t ina219_vshuntDivider = 1000; // convert to mV
-    const uint16_t ina219_vbusLSB = 4; // mV
-    const uint16_t ina219_vbusDivider = 1000; // convert to V
-    uint16_t ina219_currentLSB;
-    uint16_t ina219_powerLSB;
-    uint16_t ina219_currentDivider;
-    uint16_t ina219_powerDivider;
-    uint8_t ina219_OVF;   //0st bit of Bus Voltage Register
-    uint8_t ina219_CNVR;  //1st bit of Bus Voltage Register
+    uint8_t _i2caddr;
+    uint16_t _configValue;
+    uint16_t _calValue;
+
+    const float _vshuntLSB = 0.01; // mVolts
+    uint8_t _vshuntDigitsAfterPoint = 2;
+    const float _vbusLSB = 0.004; // V
+    uint16_t _vbusDigitsAfterPoint = 3;
+    float _currentLSB;
+    float _currentOverflow;
+    uint16_t _currentDigitsAfterPoint;
+    float _powerLSB;
+    uint8_t _OVF;   //0st bit of Bus Voltage Register
+    uint8_t _CNVR;  //1st bit of Bus Voltage Register
 
     void wireWriteRegister(uint8_t reg, uint16_t value);
     void wireReadRegister(uint8_t reg, uint16_t *value);
-    int16_t getBusVoltage_raw(void);
-    int16_t getShuntVoltage_raw(void);
-    int16_t getCurrent_raw(void);
-    int16_t getPower_raw(void);
 };

@@ -41,7 +41,7 @@ void displaydata() {
   // lines 0-1 Voltmeter
   u8x8.setCursor(0, 0);
   u8x8.print(F("V:"));
-  dtostrf(loadvoltage, 7, 2, _float_buf);  /* 8 is mininum width, 2 is precision */
+  dtostrf(loadvoltage, 7, ina219.getVbusDigitsAfterPoint(), _float_buf);  /* 8 is mininum width, 2 is precision */
   // snprintf(_str_buf8, StrBufSize8, "=%4.2f V=", 15.33L);
   u8x8.draw2x2String(2, 0, _float_buf);
 
@@ -51,15 +51,14 @@ void displaydata() {
   if (ovf) {
     u8x8.setInverseFont(1);
   }
-  dtostrf(current_mA, 8, ina219.currentDigitsAfterPoint, _float_buf);  /* 8 is mininum width, 2 is precision */
+  dtostrf(current_mA, 8, ina219.getCurrentDigitsAfterPoint(), _float_buf);  /* 8 is mininum width, 2 is precision */
   u8x8.draw2x2String(0, 3, _float_buf);
   u8x8.setInverseFont(0);
 
-  // // line 5, timestamp
-  // u8x8.setCursor(0, 5);
-  // // u8x8.print(F("T: "));
-  // u8x8.print(currentMillis);
-  // u8x8.print(F(" ms"));
+  // line 5
+  u8x8.setCursor(0, 5);
+  u8x8.clearLine(5);
+  u8x8.print(ina219.getCurrent_raw());
 
   // // line 5 bits
   // u8x8.setCursor(0, 5);
@@ -103,7 +102,6 @@ void ina219values() {
   busvoltage = ina219.getBusVoltage_V();
   current_mA = ina219.getCurrent_mA();
   power = ina219.getPower_mW();
-  // loadvoltage = busvoltage + (shuntvoltage / 1000);
   loadvoltage = busvoltage;
   energy += power / 3600;  //TODO wtf
   ovf = ina219.getOVF();
