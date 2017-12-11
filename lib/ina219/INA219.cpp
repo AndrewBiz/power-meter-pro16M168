@@ -29,10 +29,11 @@
 
 #include "INA219.h"
 
-const uint8_t NumberOfCalibrationSets = 5;
+const uint8_t NumberOfRangeSets = 5;
+
 // calibration values arrays
 // calculated for Rshunt = 0.1 Ohm
-const float ina219_calibration_set_f[NumberOfCalibrationSets][2] PROGMEM =
+const float ina219_calibration_set_f[NumberOfRangeSets][2] PROGMEM =
 {
   {0.007, 0.229}, // CurrentLSB (mA), Max_Current_Before_Overflow (A)
   {0.01, 0.327}, // CurrentLSB (mA), Max_Current_Before_Overflow (A)
@@ -41,7 +42,7 @@ const float ina219_calibration_set_f[NumberOfCalibrationSets][2] PROGMEM =
   {0.1, 3.2}  // CurrentLSB (mA), Max_Current_Before_Overflow (A)
 };
 
-const uint16_t ina219_calibration_set_i[NumberOfCalibrationSets][2] PROGMEM =
+const uint16_t ina219_calibration_set_i[NumberOfRangeSets][2] PROGMEM =
 {
   {58514, 3}, // calibration_value, currentDigitsAfterPoint
   {40960, 2}, // calibration_value, currentDigitsAfterPoint
@@ -54,8 +55,9 @@ const uint16_t ina219_calibration_set_i[NumberOfCalibrationSets][2] PROGMEM =
     @brief  Instantiates a new INA219 class
 */
 /**************************************************************************/
-Adafruit_INA219::Adafruit_INA219(uint8_t addr) {
+Adafruit_INA219::Adafruit_INA219(uint8_t addr, uint8_t range) {
   _i2caddr = addr;
+  _range = range;
 }
 
 /**************************************************************************/
@@ -63,15 +65,16 @@ Adafruit_INA219::Adafruit_INA219(uint8_t addr) {
     @brief  Setups the HW (defaults to 32V and 2A for calibration values)
 */
 /**************************************************************************/
-void Adafruit_INA219::begin(uint8_t addr) {
+void Adafruit_INA219::begin(uint8_t addr, uint8_t range) {
   _i2caddr = addr;
+  _range = range;
   begin();
 }
 
 void Adafruit_INA219::begin(void) {
   Wire.begin();
-  setConfig();
-  setCalibration();
+  _setConfig();
+  _setCalibration();
 }
 
 /**************************************************************************/
@@ -79,17 +82,17 @@ void Adafruit_INA219::begin(void) {
     @brief  Sets config register
 */
 /**************************************************************************/
-void Adafruit_INA219::setConfig(void) {
+void Adafruit_INA219::_setConfig() {
   _configValue =  INA219_CONFIG_BVOLTAGERANGE_32V |
-                        INA219_CONFIG_GAIN_1_40MV |
-                        // INA219_CONFIG_GAIN_8_320MV |
+                        // INA219_CONFIG_GAIN_1_40MV |
+                        INA219_CONFIG_GAIN_8_320MV |
                         INA219_CONFIG_BADCRES_12BIT |
                         // INA219_CONFIG_SADCRES_12BIT_1S_532US |
                         INA219_CONFIG_SADCRES_12BIT_64S_34MS |
                         // INA219_CONFIG_SADCRES_12BIT_128S_69MS |
                         INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS;
 
-  wireWriteRegister(INA219_REG_CONFIG, _configValue);
+  _wireWriteRegister(INA219_REG_CONFIG, _configValue);
 }
 
 /**************************************************************************/
@@ -97,22 +100,15 @@ void Adafruit_INA219::setConfig(void) {
     @brief  Sets calibration values
 */
 /**************************************************************************/
-void Adafruit_INA219::setCalibration(uint8_t preset) {
-  // presetID, Current_LSB,mA	Calibration Overflow_current,A
-  // 0  0.007 58514  0,229
-  // 1  0.01  40960  0,32767
-  // 2  0.02  20480  0,65534
-  // 3  0.05  8192   1,63835
-  // 4  0.1   4096   3,2
-
-  _calValue = pgm_read_word(&(ina219_calibration_set_i[preset][0]));
-  _currentLSB = pgm_read_float(&(ina219_calibration_set_f[preset][0])); // mA
-  _currentDigitsAfterPoint = pgm_read_word(&(ina219_calibration_set_i[preset][1]));
-  _currentOverflow = pgm_read_float(&(ina219_calibration_set_f[preset][1])); // A
+void Adafruit_INA219::_setCalibration() {
+  _calValue = pgm_read_word(&(ina219_calibration_set_i[_range][0]));
+  _currentLSB = pgm_read_float(&(ina219_calibration_set_f[_range][0])); // mA
+  _currentDigitsAfterPoint = pgm_read_word(&(ina219_calibration_set_i[_range][1]));
+  _currentOverflow = pgm_read_float(&(ina219_calibration_set_f[_range][1])); // A
   _powerLSB = 20 * _currentLSB; //mWatts
 
   // Set Calibration register to 'Cal' calculated above
-  wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
+  _wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
 }
 
 /**************************************************************************/
@@ -120,7 +116,7 @@ void Adafruit_INA219::setCalibration(uint8_t preset) {
     @brief  Sends a single command byte over I2C
 */
 /**************************************************************************/
-void Adafruit_INA219::wireWriteRegister (uint8_t reg, uint16_t value)
+void Adafruit_INA219::_wireWriteRegister (uint8_t reg, uint16_t value)
 {
   Wire.beginTransmission(_i2caddr);
   #if ARDUINO >= 100
@@ -140,7 +136,7 @@ void Adafruit_INA219::wireWriteRegister (uint8_t reg, uint16_t value)
     @brief  Reads a 16 bit values over I2C
 */
 /**************************************************************************/
-void Adafruit_INA219::wireReadRegister(uint8_t reg, uint16_t *value)
+void Adafruit_INA219::_wireReadRegister(uint8_t reg, uint16_t *value)
 {
 
   Wire.beginTransmission(_i2caddr);
@@ -165,6 +161,29 @@ void Adafruit_INA219::wireReadRegister(uint8_t reg, uint16_t *value)
 
 /**************************************************************************/
 /*!
+    @brief  Sets the next Metering range
+*/
+/**************************************************************************/
+void Adafruit_INA219::setNextRange() {
+  _range++;
+  if (_range > NumberOfRangeSets - 1) {
+    _range = 0;
+  }
+  _setConfig();
+  _setCalibration();
+}
+
+/**************************************************************************/
+/*!
+    @brief  Gets the Range
+*/
+/**************************************************************************/
+uint8_t Adafruit_INA219::getRange() {
+  return _range;
+}
+
+/**************************************************************************/
+/*!
     @brief  Gets the raw bus voltage (16-bit signed integer, so +-32767)
 */
 /**************************************************************************/
@@ -172,7 +191,7 @@ int16_t Adafruit_INA219::getBusVoltage_raw() {
   uint16_t value;
   uint16_t i = 0;
   do {
-    wireReadRegister(INA219_REG_BUSVOLTAGE, &value);
+    _wireReadRegister(INA219_REG_BUSVOLTAGE, &value);
     i++;
   } while(~value & (1 << 1)); //try until CNVR is set to 1
 
@@ -189,7 +208,7 @@ int16_t Adafruit_INA219::getBusVoltage_raw() {
 /**************************************************************************/
 int16_t Adafruit_INA219::getShuntVoltage_raw() {
   uint16_t value;
-  wireReadRegister(INA219_REG_SHUNTVOLTAGE, &value);
+  _wireReadRegister(INA219_REG_SHUNTVOLTAGE, &value);
   return (int16_t)value;
 }
 
@@ -204,10 +223,10 @@ int16_t Adafruit_INA219::getCurrent_raw() {
   // reset the cal register, meaning CURRENT and POWER will
   // not be available ... avoid this by always setting a cal
   // value even if it's an unfortunate extra step
-  wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
+  _wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
 
   // Now we can safely read the CURRENT register!
-  wireReadRegister(INA219_REG_CURRENT, &value);
+  _wireReadRegister(INA219_REG_CURRENT, &value);
   return (int16_t)value;
 }
 
@@ -218,7 +237,7 @@ int16_t Adafruit_INA219::getCurrent_raw() {
 /**************************************************************************/
 int16_t Adafruit_INA219::getPower_raw() {
   uint16_t value;
-  wireReadRegister(INA219_REG_POWER, &value);
+  _wireReadRegister(INA219_REG_POWER, &value);
   return (int16_t)value;
 }
 
@@ -311,7 +330,7 @@ float Adafruit_INA219::getPower_mW() {
     @note   These calculations assume a 0.1 ohm resistor is present
 */
 /**************************************************************************/
-// void Adafruit_INA219::setCalibration_32V_2A(void)
+// void Adafruit_INA219::_setCalibration_32V_2A(void)
 // {
 //   // By default we use a pretty huge range for the input voltage,
 //   // which probably isn't the most appropriate choice for system
@@ -381,7 +400,7 @@ float Adafruit_INA219::getPower_mW() {
 //   _powerDivider_mW = 2;     // Power LSB = 1mW per bit (2/1)
 //
 //   // Set Calibration register to 'Cal' calculated above
-//   wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
+//   _wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
 //
 //   // Set Config register to take into account the settings above
 //   uint16_t config = INA219_CONFIG_BVOLTAGERANGE_32V |
@@ -391,7 +410,7 @@ float Adafruit_INA219::getPower_mW() {
 //                     // INA219_CONFIG_SADCRES_12BIT_64S_34MS |
 //                     INA219_CONFIG_SADCRES_12BIT_128S_69MS |
 //                     INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS;
-//   wireWriteRegister(INA219_REG_CONFIG, config);
+//   _wireWriteRegister(INA219_REG_CONFIG, config);
 // }
 //
 // /**************************************************************************/
@@ -404,7 +423,7 @@ float Adafruit_INA219::getPower_mW() {
 //     @note   These calculations assume a 0.1 ohm resistor is present
 // */
 // /**************************************************************************/
-// void Adafruit_INA219::setCalibration_32V_1A(void)
+// void Adafruit_INA219::_setCalibration_32V_1A(void)
 // {
 //   // By default we use a pretty huge range for the input voltage,
 //   // which probably isn't the most appropriate choice for system
@@ -476,7 +495,7 @@ float Adafruit_INA219::getPower_mW() {
 //   _powerDivider_mW = 1;         // Power LSB = 800�W per bit
 //
 //   // Set Calibration register to 'Cal' calculated above
-//   wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
+//   _wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
 //
 //   // Set Config register to take into account the settings above
 //   uint16_t config = INA219_CONFIG_BVOLTAGERANGE_32V |
@@ -484,10 +503,10 @@ float Adafruit_INA219::getPower_mW() {
 //                     INA219_CONFIG_BADCRES_12BIT |
 //                     INA219_CONFIG_SADCRES_12BIT_1S_532US |
 //                     INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS;
-//   wireWriteRegister(INA219_REG_CONFIG, config);
+//   _wireWriteRegister(INA219_REG_CONFIG, config);
 // }
 //
-// void Adafruit_INA219::setCalibration_16V_400mA(void) {
+// void Adafruit_INA219::_setCalibration_16V_400mA(void) {
 //
 //   // Calibration which uses the highest precision for
 //   // current measurement (0.1mA), at the expense of
@@ -560,7 +579,7 @@ float Adafruit_INA219::getPower_mW() {
 //   _powerDivider_mW = 1;     // Power LSB = 1mW per bit
 //
 //   // Set Calibration register to 'Cal' calculated above
-//   wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
+//   _wireWriteRegister(INA219_REG_CALIBRATION, _calValue);
 //
 //   // Set Config register to take into account the settings above
 //   uint16_t config = INA219_CONFIG_BVOLTAGERANGE_16V |
@@ -568,7 +587,7 @@ float Adafruit_INA219::getPower_mW() {
 //                     INA219_CONFIG_BADCRES_12BIT |
 //                     INA219_CONFIG_SADCRES_12BIT_1S_532US |
 //                     INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS;
-//   wireWriteRegister(INA219_REG_CONFIG, config);
+//   _wireWriteRegister(INA219_REG_CONFIG, config);
 // }
 
 /**************************************************************************/

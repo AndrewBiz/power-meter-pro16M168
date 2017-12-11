@@ -111,18 +111,17 @@
 /*=========================================================================*/
 
 /*=========================================================================
-    Calibration default preset
     -----------------------------------------------------------------------*/
-    #define CALIBRATION_DEFAULT_PRESET 0
+    #define DEFAULT_RANGE 2
 /*=========================================================================*/
 
 class Adafruit_INA219{
   public:
-    Adafruit_INA219(uint8_t addr = INA219_ADDRESS);
+    Adafruit_INA219(uint8_t addr = INA219_ADDRESS, uint8_t range = DEFAULT_RANGE);
     void begin(void);
-    void begin(uint8_t addr);
-    void setConfig(void);
-    void setCalibration(uint8_t preset = CALIBRATION_DEFAULT_PRESET);
+    void begin(uint8_t addr, uint8_t range);
+    void setNextRange(void);
+    uint8_t getRange(void);
     int16_t getBusVoltage_raw(void);
     int16_t getShuntVoltage_raw(void);
     int16_t getCurrent_raw(void);
@@ -138,6 +137,7 @@ class Adafruit_INA219{
 
   private:
     uint8_t _i2caddr;
+    uint8_t _range;
     uint16_t _configValue;
     uint16_t _calValue;
 
@@ -152,6 +152,8 @@ class Adafruit_INA219{
     uint8_t _OVF;   //0st bit of Bus Voltage Register
     uint8_t _CNVR;  //1st bit of Bus Voltage Register
 
-    void wireWriteRegister(uint8_t reg, uint16_t value);
-    void wireReadRegister(uint8_t reg, uint16_t *value);
+    void _setConfig(void);
+    void _setCalibration(void);
+    void _wireWriteRegister(uint8_t reg, uint16_t value);
+    void _wireReadRegister(uint8_t reg, uint16_t *value);
 };
