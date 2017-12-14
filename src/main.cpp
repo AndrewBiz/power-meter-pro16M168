@@ -38,7 +38,7 @@ void displaydata() {
   // lines 2-4 Ampermeter
   u8x8.setCursor(0, 2);
   u8x8.print(F("mA ("));
-  u8x8.print(ina219.getRange());
+  u8x8.print(ina219.getScale());
   u8x8.print(F("):"));
   if (ovf) {
     u8x8.setInverseFont(1);
@@ -109,12 +109,15 @@ void setup() {
   ina219.begin();
 }
 
+/*****************************************************************************
+   main loop
+*****************************************************************************/
 void loop() {
   currentMillis = millis();
   modeButton.update();
 
   if (modeButton.isSingleClick()) {
-    ina219.setNextRange();
+    ina219.setNextScale();
   }
 
   if (currentMillis - previousMillis >= interval) {

@@ -29,7 +29,7 @@
 
 #include "INA219.h"
 
-const uint8_t NumberOfRangeSets = 4;
+const uint8_t NumberOfScaleSets = 4;
 
 // calibration values arrays
 // calculated for Rshunt = 0.1 Ohm
@@ -41,7 +41,7 @@ const uint8_t NumberOfRangeSets = 4;
 // 5) max_possible_current = Vshunt_max / Rshunt = 0.8A
 // 6) Max_Current_Before_Overflow = min(max_current, max_possible_current) = 0.655A
 
-const float ina219_range_set_f[NumberOfRangeSets][2] PROGMEM =
+const float ina219_scale_set_f[NumberOfScaleSets][2] PROGMEM =
 {
   // {0.007, 0.229}, // CurrentLSB (mA), Max_Current_Before_Overflow (A)
   {0.01, 0.327}, // CurrentLSB (mA), Max_Current_Before_Overflow (A)
@@ -50,7 +50,7 @@ const float ina219_range_set_f[NumberOfRangeSets][2] PROGMEM =
   {0.1, 3.2}  // CurrentLSB (mA), Max_Current_Before_Overflow (A)
 };
 
-const uint16_t ina219_range_set_i[NumberOfRangeSets][3] PROGMEM =
+const uint16_t ina219_scale_set_i[NumberOfScaleSets][3] PROGMEM =
 {
   // {58514, 3, INA219_CONFIG_GAIN_1_40MV}, // calibration_value, currentDigitsAfterPoint, config_gain
   {40960, 2, INA219_CONFIG_GAIN_1_40MV}, // calibration_value, currentDigitsAfterPoint, config_gain (0-400mA)
@@ -63,9 +63,9 @@ const uint16_t ina219_range_set_i[NumberOfRangeSets][3] PROGMEM =
     @brief  Instantiates a new INA219 class
 */
 /**************************************************************************/
-Adafruit_INA219::Adafruit_INA219(uint8_t addr, uint8_t range) {
+Adafruit_INA219::Adafruit_INA219(uint8_t addr, uint8_t scale) {
   _i2caddr = addr;
-  _range = range;
+  _scale = scale;
 }
 
 /**************************************************************************/
@@ -73,9 +73,9 @@ Adafruit_INA219::Adafruit_INA219(uint8_t addr, uint8_t range) {
     @brief  Setups the HW (defaults to 32V and 2A for calibration values)
 */
 /**************************************************************************/
-void Adafruit_INA219::begin(uint8_t addr, uint8_t range) {
+void Adafruit_INA219::begin(uint8_t addr, uint8_t scale) {
   _i2caddr = addr;
-  _range = range;
+  _scale = scale;
   begin();
 }
 
@@ -92,7 +92,7 @@ void Adafruit_INA219::begin(void) {
 /**************************************************************************/
 void Adafruit_INA219::_setConfig() {
   _configValue =  INA219_CONFIG_BVOLTAGERANGE_32V |
-                  pgm_read_word(&(ina219_range_set_i[_range][2])) |
+                  pgm_read_word(&(ina219_scale_set_i[_scale][2])) |
                   // INA219_CONFIG_GAIN_8_320MV |
                   //
                   INA219_CONFIG_BADCRES_12BIT |
@@ -113,10 +113,10 @@ void Adafruit_INA219::_setConfig() {
 */
 /**************************************************************************/
 void Adafruit_INA219::_setCalibration() {
-  _calValue = pgm_read_word(&(ina219_range_set_i[_range][0]));
-  _currentLSB = pgm_read_float(&(ina219_range_set_f[_range][0])); // mA
-  _currentDigitsAfterPoint = pgm_read_word(&(ina219_range_set_i[_range][1]));
-  _currentOverflow = pgm_read_float(&(ina219_range_set_f[_range][1])); // A
+  _calValue = pgm_read_word(&(ina219_scale_set_i[_scale][0]));
+  _currentLSB = pgm_read_float(&(ina219_scale_set_f[_scale][0])); // mA
+  _currentDigitsAfterPoint = pgm_read_word(&(ina219_scale_set_i[_scale][1]));
+  _currentOverflow = pgm_read_float(&(ina219_scale_set_f[_scale][1])); // A
   _powerLSB = 20 * _currentLSB; //mWatts
 
   // Set Calibration register to 'Cal' calculated above
@@ -173,13 +173,13 @@ void Adafruit_INA219::_wireReadRegister(uint8_t reg, uint16_t *value)
 
 /**************************************************************************/
 /*!
-    @brief  Sets the next Metering range
+    @brief  Sets the next Metering scale
 */
 /**************************************************************************/
-void Adafruit_INA219::setNextRange() {
-  _range++;
-  if (_range > NumberOfRangeSets - 1) {
-    _range = 0;
+void Adafruit_INA219::setNextScale() {
+  _scale++;
+  if (_scale > NumberOfScaleSets - 1) {
+    _scale = 0;
   }
   _setConfig();
   _setCalibration();
@@ -187,11 +187,11 @@ void Adafruit_INA219::setNextRange() {
 
 /**************************************************************************/
 /*!
-    @brief  Gets the Range
+    @brief  Gets the Scale
 */
 /**************************************************************************/
-uint8_t Adafruit_INA219::getRange() {
-  return _range;
+uint8_t Adafruit_INA219::getScale() {
+  return _scale;
 }
 
 /**************************************************************************/

@@ -40,15 +40,15 @@
     /*---------------------------------------------------------------------*/
     #define INA219_CONFIG_RESET                    (0x8000)  // Reset Bit
 
-    #define INA219_CONFIG_BVOLTAGERANGE_MASK       (0x2000)  // Bus Voltage Range Mask
-    #define INA219_CONFIG_BVOLTAGERANGE_16V        (0x0000)  // 0-16V Range
-    #define INA219_CONFIG_BVOLTAGERANGE_32V        (0x2000)  // 0-32V Range
+    #define INA219_CONFIG_BVOLTAGERANGE_MASK       (0x2000)  // Bus Voltage Scale Mask
+    #define INA219_CONFIG_BVOLTAGERANGE_16V        (0x0000)  // 0-16V Scale
+    #define INA219_CONFIG_BVOLTAGERANGE_32V        (0x2000)  // 0-32V Scale
 
     #define INA219_CONFIG_GAIN_MASK                (0x1800)  // Gain Mask
-    #define INA219_CONFIG_GAIN_1_40MV              (0x0000)  // Gain 1, 40mV Range
-    #define INA219_CONFIG_GAIN_2_80MV              (0x0800)  // Gain 2, 80mV Range
-    #define INA219_CONFIG_GAIN_4_160MV             (0x1000)  // Gain 4, 160mV Range
-    #define INA219_CONFIG_GAIN_8_320MV             (0x1800)  // Gain 8, 320mV Range
+    #define INA219_CONFIG_GAIN_1_40MV              (0x0000)  // Gain 1, 40mV Scale
+    #define INA219_CONFIG_GAIN_2_80MV              (0x0800)  // Gain 2, 80mV Scale
+    #define INA219_CONFIG_GAIN_4_160MV             (0x1000)  // Gain 4, 160mV Scale
+    #define INA219_CONFIG_GAIN_8_320MV             (0x1800)  // Gain 8, 320mV Scale
 
     #define INA219_CONFIG_BADCRES_MASK             (0x0780)  // Bus ADC Resolution Mask
     #define INA219_CONFIG_BADCRES_9BIT             (0x0080)  // 9-bit bus res = 0..511
@@ -117,11 +117,11 @@
 
 class Adafruit_INA219{
   public:
-    Adafruit_INA219(uint8_t addr = INA219_ADDRESS, uint8_t range = DEFAULT_RANGE);
+    Adafruit_INA219(uint8_t addr = INA219_ADDRESS, uint8_t scale = DEFAULT_RANGE);
     void begin(void);
-    void begin(uint8_t addr, uint8_t range);
-    void setNextRange(void);
-    uint8_t getRange(void);
+    void begin(uint8_t addr, uint8_t scale);
+    void setNextScale(void);
+    uint8_t getScale(void);
     int16_t getBusVoltage_raw(void);
     int16_t getShuntVoltage_raw(void);
     int16_t getCurrent_raw(void);
@@ -137,7 +137,7 @@ class Adafruit_INA219{
 
   private:
     uint8_t _i2caddr;
-    uint8_t _range;
+    uint8_t _scale;
     uint16_t _configValue;
     uint16_t _calValue;
 
