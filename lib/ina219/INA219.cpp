@@ -313,11 +313,19 @@ float Adafruit_INA219::getCurrent_mA() {
 
 /**************************************************************************/
 /*!
-    @brief  Gets the digits after point value
+    @brief  Getters for current
 */
 /**************************************************************************/
 uint16_t Adafruit_INA219::getCurrentDigitsAfterPoint() {
   return _currentDigitsAfterPoint;
+}
+
+float Adafruit_INA219::getCurrentLSB() {
+  return _currentLSB;
+}
+
+float Adafruit_INA219::getCurrentOverflow() {
+  return _currentOverflow;
 }
 
 /**************************************************************************/

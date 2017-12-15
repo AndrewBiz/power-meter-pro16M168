@@ -16,7 +16,7 @@ PinButton modeButton(modeButtonPin);
 const uint8_t LEDPin = 13;
 
 enum {VA_METER, TO_POWER_METER, POWER_METER, TO_VA_METER};
-uint8_t mode = VA_METER; //The current mode machine mode
+uint8_t mode = VA_METER; //The current mode
 
 unsigned long timeNow = 0;
 unsigned long timePrevious = 0;
@@ -69,19 +69,18 @@ void clear_display() {
 
 void displaydata_VA_METER() {
   char _float_buf[9];
-  // u8x8.setFont(u8x8_font_pressstart2p_f);
   u8x8.setFont(u8x8_font_artossans8_r);
-  // lines 0-1 Voltmeter
+  // u8x8.setFont(u8x8_font_pxplustandynewtv_f);
+
+  // Voltmeter
   u8x8.setCursor(0, 0);
   u8x8.print(F("V:"));
   dtostrf(busvoltage, 7, ina219.getVbusDigitsAfterPoint(), _float_buf);  /* 8 is mininum width, 2 is precision */
   u8x8.draw2x2String(2, 0, _float_buf);
 
-  // lines 2-4 Ampermeter
+  // Ampermeter
   u8x8.setCursor(0, 2);
-  u8x8.print(F("mA ("));
-  u8x8.print(ina219.getScale());
-  u8x8.print(F("):"));
+  u8x8.print(F("mA:"));
   if (ovf) {
     u8x8.setInverseFont(1);
   }
@@ -89,31 +88,19 @@ void displaydata_VA_METER() {
   u8x8.draw2x2String(0, 3, _float_buf);
   u8x8.setInverseFont(0);
 
-  // line 5
-  // u8x8.setCursor(0, 5);
-  // u8x8.clearLine(5);
-  // u8x8.print(ina219.getCurrent_raw());
-
-  // // line 5 bits
-  // u8x8.setCursor(0, 5);
-  // u8x8.clearLine(5);
-  // u8x8.print(F("OVF: "));
-  // u8x8.print(ovf);
-  // u8x8.print(F("  CNVR: "));
-  // u8x8.print(cnvr);
-
-  // line 6, power
-  // u8x8.setCursor(0, 6);
-  // u8x8.clearLine(6);
-  // // u8x8.print(F("P: "));
-  // u8x8.print(power);
-  // u8x8.print(F(" mW"));
-  //
-  // // line 7, energy
-  // u8x8.setCursor(0, 7);
-  // // u8x8.print(F("E: "));
-  // u8x8.print(energy);
-  // u8x8.print(F(" mWh"));
+  // Scale info
+  u8x8.setCursor(0, 6);
+  u8x8.print(F("scale:"));
+  char _float_buf2[6];
+  dtostrf(ina219.getCurrentOverflow(), 5, 3, _float_buf2);
+  char _float_buf3[5];
+  dtostrf(ina219.getCurrentLSB(), 4, 2, _float_buf3);
+  u8x8.setCursor(0, 7);
+  u8x8.print(F(" "));
+  u8x8.print(_float_buf2);
+  u8x8.print(F("A   "));
+  u8x8.print(_float_buf3);
+  u8x8.print(F("mA"));
 }
 
 void displaydata_POWER_METER() {
@@ -186,7 +173,7 @@ void loop() {
   modeButton.update();
 
   switch (mode) {
-    
+
     case VA_METER: // main working mode: big V and A readings
       if (modeButton.isSingleClick()) {
         ina219.setNextScale();

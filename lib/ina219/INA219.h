@@ -133,6 +133,8 @@ class Adafruit_INA219{
     int8_t getOVF(void);
     int8_t getCNVR(void);
     uint16_t getCurrentDigitsAfterPoint(void);
+    float getCurrentLSB(void);
+    float getCurrentOverflow(void);
     uint16_t getVbusDigitsAfterPoint(void);
 
   private:
